@@ -115,6 +115,15 @@ This evaluation does not measure originality or commercial viability.
 - Not publicly deployed or submitted. Existing macOS Git tooling and dependency
   advisories are recorded in [LOCAL_SETUP.md](../LOCAL_SETUP.md).
 
+## Source repository
+
+A standalone private mirror of the DIALECTIC source was pushed to GitHub on
+2026-10-29 as `https://github.com/closestfriend/dialectic` (private repo,
+`main` at commit `38ebe34`). It contains `app/`, `scripts/`, the root
+`package.json` and docs/screenshots; `.env`, node_modules, MLflow venv/state
+and DS_Store files are excluded. The kit checkout remains the working
+workspace with the live `.env`.
+
 ## Demo materials
 
 - [Desktop commissioning view](./dialectic-commissioning-desktop.png)
