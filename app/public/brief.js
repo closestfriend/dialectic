@@ -1,0 +1,68 @@
+const $=id=>document.getElementById(id);
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pct=n=>(100*n).toFixed(1)+'%';
+const checkLabels={seen_in_both:'Seen in both independent shortlists',needs_testing:'Independent support still needs testing',incomplete:'Independent check incomplete'};
+let current=null;
+
+function clearDraft(){
+  current=null;$('brief-markdown').value='';$('markdown-wrap').hidden=true;$('markdown-wrap').open=false;
+  $('brief-cards').innerHTML='';$('brief-ledger').innerHTML='';$('brief-feedback').textContent='';$('brief-basis').textContent='';
+  setActions(false);
+}
+export function resetBrief(){clearDraft();$('brief-section').hidden=true;}
+export function briefLoading(){
+  clearDraft();$('brief-ledger-wrap').hidden=true;
+  $('brief-section').hidden=false;$('brief-cards').innerHTML='';$('brief-ledger').innerHTML='';$('brief-title').textContent='Developing the commission';
+  $('brief-notice').textContent='Checking each reference against the two seeds separately. A balanced recommendation is a starting point, not proof of demand.';
+  $('refresh-brief').hidden=true;setActions(false);
+}
+export function briefError(message){
+  clearDraft();$('brief-ledger-wrap').hidden=true;
+  $('brief-section').hidden=false;$('brief-notice').textContent=message;$('refresh-brief').hidden=false;setActions(false);
+}
+function setActions(enabled){for(const id of ['copy-brief','download-brief','print-brief'])$(id).disabled=!enabled;}
+export function invalidateBrief(goal,tolerance){
+  if(!current)return;
+  const stale=current.basis.goal!==goal||Math.abs(current.basis.tolerance-tolerance)>1e-10;
+  $('brief-cards').hidden=stale;$('brief-ledger-wrap').hidden=stale;$('refresh-brief').hidden=!stale;setActions(!stale);
+  $('markdown-wrap').hidden=stale;if(stale)$('markdown-wrap').open=false;
+  $('brief-notice').textContent=stale?'Your goal or balance window changed. Rebuild the brief to use the current evidence selection.':
+    'Qloo observations below support reference selection. The proposed commissions are editorial starting points for a team to develop and test.';
+}
+export function renderBrief(brief){
+  current=brief;$('brief-section').hidden=false;$('brief-cards').hidden=false;$('brief-ledger-wrap').hidden=false;$('markdown-wrap').hidden=false;
+  $('brief-title').textContent=`${brief.seeds[0].name} × ${brief.seeds[1].name}`;
+  $('brief-basis').textContent=`${brief.basis.label} / ${brief.basis.window} attribution window`;
+  $('brief-notice').textContent=brief.directions.length?
+    'Qloo observations below support reference selection. The proposed commissions are editorial starting points for a team to develop and test.':
+    'No reference meets this balance window. Widen it or choose another pair; the tool will not invent evidence to fill three slots.';
+  $('refresh-brief').hidden=true;setActions(true);
+  $('brief-cards').innerHTML=brief.directions.map((d,i)=>`<article class="brief-card">
+    <div class="direction-label"><span>Direction ${i+1}</span><span>${esc(d.proposal.format)}</span></div>
+    <h3>${esc(d.proposal.title)}</h3>
+    <div class="brief-observation"><span class="section-label">Qloo observation</span><p><strong>${esc(d.anchor.name)}</strong> carries <span class="thesis-color">${pct(d.observation.shareA)} A</span> / <span class="antithesis-color">${pct(d.observation.shareB)} B</span> normalized seed attribution.</p>
+      <p class="corroboration ${d.check.status==='seen_in_both'?'corroborated':''}">${esc(checkLabels[d.check.status])}</p>
+      <div class="shortlist-checks">${[d.check.a,d.check.b].map((c,side)=>`<span>${side?'B':'A'}: ${c.status==='present'?`rank ${c.rank}`:c.status==='not_observed'?'not in top 20':'unavailable'}</span>`).join('')}</div>
+    </div>
+    <div class="proposal-copy"><span class="section-label">Proposed commission</span><p>${esc(d.proposal.premise)}</p>${d.proposal.catalogCues.length?`<p class="catalog-cues">Catalog references: ${esc(d.proposal.catalogCues.join(', '))}</p>`:''}
+      <h4>What the team makes</h4><p>${esc(d.proposal.deliverable)}.</p><h4>Start here</h4><p>${esc(d.proposal.nextStep)}</p>
+      <h4>Keep both worlds present</h4><ul>${d.proposal.creativeConstraints.map(c=>`<li>${esc(c)}</li>`).join('')}</ul>
+      <div class="rejection"><h4>Reason to reject it</h4><p>${esc(d.proposal.rejectIf)}</p></div>
+    </div>
+    <details><summary>Source and limits</summary><p>Joint affinity: ${typeof d.observation.affinity==='number'?d.observation.affinity.toFixed(3):'unavailable'}. Shortlist absence is not evidence of no affinity. Participation, rights, availability and demand remain untested.</p><pre>${esc(JSON.stringify({entity:d.anchor.entity_id,observation:d.observation,independentChecks:d.check},null,2))}</pre></details>
+  </article>`).join('');
+  $('brief-ledger').innerHTML=brief.ledger.map(entry=>`<li><strong>${esc(entry.step)}</strong><span class="ledger-status">${entry.status==='error'?'Unresolved':'Recorded'}</span><p>${esc(entry.observation)}</p>${entry.evidenceId?`<code>${esc(entry.evidenceId)}</code>`:''}</li>`).join('');
+  $('brief-markdown').value=brief.markdown;
+}
+$('copy-brief').addEventListener('click',async()=>{
+  if(!current)return;
+  try{await navigator.clipboard.writeText(current.markdown);$('brief-feedback').textContent='Brief copied.';}
+  catch{$('markdown-wrap').open=true;$('brief-markdown').focus();$('brief-markdown').select();$('brief-feedback').textContent='Select and copy the Markdown below.';}
+});
+$('download-brief').addEventListener('click',()=>{
+  if(!current)return;
+  const url=URL.createObjectURL(new Blob([current.markdown],{type:'text/markdown;charset=utf-8'}));
+  const link=document.createElement('a');link.href=url;link.download='dialectic-commissioning-brief.md';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  $('brief-feedback').textContent='Markdown export prepared.';
+});
+$('print-brief').addEventListener('click',()=>{if(current)window.print();});

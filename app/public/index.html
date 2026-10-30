@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#edf2fa">
+  <meta name="description" content="Find the cultural artifacts that connect two different worlds, with live Qloo attribution.">
+  <title>DIALECTIC — Cultural collision engine</title>
+  <link rel="stylesheet" href="/style.css"><script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="masthead"><a class="wordmark" href="/" aria-label="DIALECTIC home"><span class="brand-mark" aria-hidden="true">◒</span> DIALECTIC<span class="brand-period">.</span></a><div class="edition">A cultural collision engine <span class="live-dot"></span><span>Powered by Qloo</span></div><button id="method-button" class="text-button">How it works</button></header>
+  <main>
+    <section class="intro"><div><p class="intro-kicker">A commissioning instrument for unlikely collaborators.</p><h1>Two worlds.<br>What could they make?</h1></div><p class="intro-copy">Find the references connecting two cultural worlds. Turn them into a brief with a deliverable, a first step, and evidence you can inspect.</p></section>
+    <div class="project-goal"><label for="project-goal">What are you working on?</label><select id="project-goal"><option value="collaboration">A collaboration commission</option><option value="introduction">Introducing a work to a new context</option><option value="programming">A cultural program</option></select></div>
+    <section class="collider" aria-label="Choose the two worlds">
+      <div class="seed-panel thesis" id="panel-a"><div class="seed-heading"><span class="seed-symbol">A</span><label for="seed-a">Thesis</label><span>Your first world</span></div><form id="form-a"><div class="search-field"><input id="seed-a" maxlength="120" placeholder="An artist, film, person, brand…" value="Aphex Twin" autocomplete="off"><button type="submit" aria-label="Search thesis">Search</button></div></form><div id="matches-a" class="matches" aria-live="polite"><p class="seed-hint">Search, then choose the entity you mean.</p></div></div>
+      <div class="collision-symbol" aria-hidden="true"><span>×</span></div>
+      <div class="seed-panel antithesis" id="panel-b"><div class="seed-heading"><span class="seed-symbol">B</span><label for="seed-b">Antithesis</label><span>The unlikely other</span></div><form id="form-b"><div class="search-field"><input id="seed-b" maxlength="120" placeholder="A completely different world…" value="Martha Stewart" autocomplete="off"><button type="submit" aria-label="Search antithesis">Search</button></div></form><div id="matches-b" class="matches" aria-live="polite"><p class="seed-hint">Search, then choose the entity you mean.</p></div></div>
+      <div class="collision-footer"><div class="pairings"><span>Try a collision</span><button data-pair="0">Aphex Twin × Martha Stewart</button><button data-pair="1">Tarkovsky × Guy Fieri</button><button data-pair="2">Succession × WWE</button></div><button id="collide" class="primary">Find the collision <span aria-hidden="true">↗</span></button></div>
+    </section>
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+    <section id="brief-section" class="brief-section" hidden aria-label="Commissioning brief">
+      <div class="brief-heading"><div><p class="intro-kicker">Your commissioning brief</p><h2 id="brief-title"></h2><p id="brief-basis"></p></div><div class="brief-actions"><button id="copy-brief">Copy brief</button><button id="download-brief">Download .md</button><button id="print-brief">Print / PDF</button></div></div>
+      <div class="brief-disclosure"><p id="brief-notice"></p><button id="refresh-brief" class="text-button" hidden>Rebuild brief</button></div><p id="brief-feedback" role="status" aria-live="polite"></p>
+      <div id="brief-cards" class="brief-cards"></div>
+      <details id="brief-ledger-wrap" class="evidence"><summary>The investigation ledger</summary><ol id="brief-ledger" class="brief-ledger"></ol></details>
+      <details id="markdown-wrap" class="evidence"><summary>View or copy the full Markdown brief</summary><label for="brief-markdown">Editable commissioning brief</label><textarea id="brief-markdown" rows="14" spellcheck="false"></textarea><p>Edits here are for manual copying. Download exports the original draft.</p></details>
+    </section>
+    <section id="results" hidden>
+      <div class="results-header"><div><p class="intro-kicker">Explore the underlying candidates</p><h2 id="result-title">Common ground, uncommon company.</h2></div><button id="export" class="text-button">Export evidence ↓</button></div>
+      <div class="controls"><div><label for="tolerance">Balance window <strong id="window-label">40–60%</strong></label><input type="range" id="tolerance" min="0" max="50" value="10" step="1"><span class="control-help">Narrower favors equal contributions</span></div><p id="count-summary"></p><label class="excluded-toggle"><input type="checkbox" id="show-excluded"> Show excluded candidates</label></div>
+      <nav id="domain-tabs" class="domain-tabs" aria-label="Filter result domain"></nav>
+      <div id="domain-notices" class="domain-notices"></div>
+      <div id="candidates" class="candidate-grid"></div>
+      <section class="tag-section"><div><h3>Where their catalog tags meet</h3><p>Shared descriptions attached to these entities. This is separate from recommendation attribution.</p></div><div id="shared-tags"></div></section>
+      <details class="evidence"><summary>Inspect the investigation</summary><p id="investigation-summary"></p><pre id="request-evidence"></pre></details>
+    </section>
+    <section id="idle" class="idle"><div class="orbit" aria-hidden="true"><span></span><span></span><b>∩</b></div><div><h2>The interesting part is in between.</h2><p>Pick two entities. We’ll explore five cultural domains and look for recommendations with contributions from both seeds.</p><div class="domain-preview"><span>Film</span><span>Music</span><span>Books</span><span>Places</span><span>Brands</span></div></div></section>
+    <section id="method" class="method" hidden tabindex="-1"><h2>A bridge, with receipts.</h2><div class="method-grid"><div><h3>Confirm the two worlds</h3><p>Names can point to different things. Choose the exact entities before the investigation starts.</p></div><div><h3>Follow the evidence</h3><p>Qloo recommends across five domains and reports the scores attributed to each seed. No generated cultural backstory is added.</p></div><div><h3>Balance the contributions</h3><p>We normalize the two seed scores, then minimize the larger distance from 50%. Joint affinity breaks ties. Missing scores never become an assumed 50/50.</p></div></div><p class="method-note">Attribution explains a recommendation. It does not measure shared audience size, prove causality, or establish an individual’s preferences. A balanced result can still have low overall affinity. The search covers the top 20 returned candidates per domain.</p></section>
+  </main>
+  <footer><span>DIALECTIC / Local prototype</span><span>Real Qloo results. No invented bridges.</span><span>Two worlds. A third possibility.</span></footer>
+</body>
+</html>

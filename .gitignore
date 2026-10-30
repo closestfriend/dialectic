@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.qloo/
+.DS_Store
+.venv-eval/
+.local/
+__pycache__/
+.vercel
