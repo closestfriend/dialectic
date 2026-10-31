@@ -1,10 +1,16 @@
 # DIALECTIC
 
-A local commissioning prototype for the Qloo hackathon: collide two confirmed
+A commissioning application for the Qloo hackathon: collide two confirmed
 entities (thesis / antithesis) and discover recommendations across five domains
 using direct Qloo REST calls, with measured attribution — no model API key, no
 invented bridges. The interface is dependency-free and served by a loopback-only
-Node server that owns credentials.
+Node backend that owns credentials.
+
+Live demo: **https://dialectic-zeta.vercel.app**
+
+Hosted on Vercel in the closestfriend Pro team. The Qloo API key is a private
+production environment variable. Signed selection and evidence tokens preserve
+the workflow across serverless cold starts. MLflow is optional for local evaluation.
 
 ## Run
 
@@ -51,5 +57,5 @@ Thirteen Node tests cover attribution ranking, balancing, the Qloo client
 Note: an npm audit of the pinned dependency tree reports 28 transitive
 advisories (22 moderate, six high, via the tracing SDK's OpenTelemetry tree and
 the official harness's undici dependency). Compatible `npm audit fix` did not
-resolve them; keep this build local while reviewing upstream updates before any
-public deployment.
+resolve them. The hosted demo exposes only the application's restricted Qloo
+routes; dependency updates remain a follow-up task.

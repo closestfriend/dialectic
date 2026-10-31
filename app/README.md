@@ -1,7 +1,7 @@
 # DIALECTIC
 
-A local commissioning prototype using direct Qloo REST calls. No model API key
-is needed. The official harness and MCP starter remain available separately.
+A commissioning application using direct Qloo REST calls. No model API key
+is needed. Live demo: https://dialectic-zeta.vercel.app.
 MLflow tracing is an optional local backend integration; Playwright is a development
 dependency used for repeatable browser checks and screenshots.
 
@@ -150,5 +150,8 @@ commissioning trace was read back with seven spans (root plus six Qloo checks).
 The [submission package](../docs/SUBMISSION_DIALECTIC.md) includes the product
 description, demo script, verified live example and screenshot links.
 
-Existing tooling limitations and npm advisories are recorded in
-[LOCAL_SETUP.md](../LOCAL_SETUP.md). This local prototype is not deployed.
+The public demo is deployed on Vercel in the closestfriend Pro team. The root
+README records dependency advisories. Signed entity and report tokens let
+requests resume across function instances; caches and Qloo pacing remain per
+instance. Production requires only QLOO_API_KEY and QLOO_BASE_URL. MLflow
+remains an optional local integration.

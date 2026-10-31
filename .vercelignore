@@ -1,0 +1,7 @@
+.env*
+.local
+.venv-eval
+.qloo
+docs
+node_modules
+.git

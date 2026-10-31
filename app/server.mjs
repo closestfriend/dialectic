@@ -6,11 +6,19 @@ import { rankCandidates } from './balance.mjs';
 import { randomUUID } from 'node:crypto';
 import { investigateBrief, briefMarkdown, goals } from './brief.mjs';
 import { traceOperation } from './tracing.mjs';
+import { stateCodec } from './state.mjs';
 
 const domains=['movie','artist','book','place','brand'];
 const publicFiles={'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/brief.js':['brief.js','text/javascript'],'/style.css':['style.css','text/css']};
 const uuid=/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
 const fail=(message,status=400)=>Object.assign(Error(message),{status});
+function trustedHost(host) {
+  const hostname=host?.split(':')[0]?.toLowerCase();
+  return hostname==='127.0.0.1'||hostname==='localhost'||hostname?.endsWith('.vercel.app');
+}
+function requestOrigin(req,host) {
+  return `${req.headers['x-forwarded-proto']??'http'}://${host}`;
+}
 function imageUrl(value) {
   try { const u=new URL(value); return u.protocol==='https:'&&u.hostname==='images.qloo.com'?u.href:null; } catch {return null;}
 }
@@ -20,11 +28,16 @@ function entitySummary(x) {
     description:(x.properties?.description??'').slice(0,1200)};
 }
 async function jsonBody(req) {
+  if(req.body!==undefined) {
+    if(Buffer.byteLength(JSON.stringify(req.body))>1500000)throw fail('Request is too large.',413);
+    return typeof req.body==='string'?JSON.parse(req.body):req.body;
+  }
   let body='';
-  for await(const chunk of req) {body+=chunk; if(Buffer.byteLength(body)>4096) throw fail('Request is too large.',413);}
+  for await(const chunk of req) {body+=chunk; if(Buffer.byteLength(body)>1500000) throw fail('Request is too large.',413);}
   try {return JSON.parse(body);} catch {throw fail('Send a valid JSON request.');}
 }
-export function createApp({client=createQlooClient({apiKey:process.env.QLOO_API_KEY,baseUrl:process.env.QLOO_BASE_URL})}={}) {
+export function createApp({client=createQlooClient({apiKey:process.env.QLOO_API_KEY,baseUrl:process.env.QLOO_BASE_URL}),stateSecret=process.env.STATE_SIGNING_SECRET??process.env.QLOO_API_KEY??randomUUID()}={}) {
+  const codec=stateCodec(stateSecret);
   const confirmed=new Map(),reports=new Map(); let collisions=0, searches=0,briefs=0;
   const server=http.createServer(async(req,res)=>{
     const send=(status,body)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(body));};
@@ -32,8 +45,8 @@ export function createApp({client=createQlooClient({apiKey:process.env.QLOO_API_
     res.setHeader('Content-Security-Policy',"default-src 'self'; img-src 'self' https://images.qloo.com; style-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
     try {
       const host=req.headers.host;
-      if(!host || !['127.0.0.1','localhost'].includes(host.split(':')[0])) throw fail('Local access only.',403);
-      if(req.headers.origin && req.headers.origin!==`http://${host}`) throw fail('Cross-origin requests are not allowed.',403);
+      if(!host || !trustedHost(host)) throw fail('Untrusted host.',403);
+      if(req.headers.origin && req.headers.origin!==requestOrigin(req,host)) throw fail('Cross-origin requests are not allowed.',403);
       if(req.headers['sec-fetch-site']==='cross-site') throw fail('Cross-site requests are not allowed.',403);
       const url=new URL(req.url,`http://${host}`);
       if(req.method==='GET' && publicFiles[url.pathname]) {
@@ -54,7 +67,7 @@ export function createApp({client=createQlooClient({apiKey:process.env.QLOO_API_
             if(confirmed.size>=500) confirmed.delete(confirmed.keys().next().value);
             confirmed.set(entity.entity_id.toUpperCase(),{entity,time:Date.now()});
           }
-          return send(200,{entities,cached:result.cached});
+          return send(200,{entities:entities.map(entity=>({...entity,selectionToken:codec.encode('entity',entity)})),cached:result.cached});
         } finally {searches--;}
       }
       if(url.pathname==='/api/collide' && req.method==='POST') {
@@ -63,7 +76,10 @@ export function createApp({client=createQlooClient({apiKey:process.env.QLOO_API_
         if(!body||typeof body.a!=='string'||typeof body.b!=='string'||!uuid.test(body.a)||!uuid.test(body.b)) throw fail('Select two search results.');
         const seeds=[body.a.toUpperCase(),body.b.toUpperCase()];
         if(seeds[0]===seeds[1]) throw fail('Choose two different entities to collide.');
-        const selected=seeds.map(id=>confirmed.get(id));
+        const selected=seeds.map((id,i)=>{
+          const entity=codec.decode(body.selectionTokens?.[i],'entity');
+          return entity?.entity_id?.toUpperCase()===id?{entity,time:Date.now()}:confirmed.get(id);
+        });
         if(selected.some(x=>!x || Date.now()-x.time>60*60*1000)) throw fail('Search and confirm both entities again.');
         if(collisions||briefs) throw fail('An investigation is already running. Try again shortly.',429);
         collisions++;
@@ -93,14 +109,15 @@ export function createApp({client=createQlooClient({apiKey:process.env.QLOO_API_
             generatedAt:new Date().toISOString(),method:'Normalized pair attribution; minimax distance from 50/50, then joint affinity.'};
           if(reports.size>=20)reports.delete(reports.keys().next().value);
           reports.set(report.runId,{report,time:Date.now()});
-          return send(200,report);
+          return send(200,{...report,reportToken:codec.encode('report',report)});
         } finally {collisions--;}
       }
       if(url.pathname==='/api/brief' && req.method==='POST') {
         if(!req.headers['content-type']?.startsWith('application/json'))throw fail('JSON content type required.',415);
         const body=await jsonBody(req);
         if(!body||typeof body.runId!=='string')throw fail('Start a collision first.');
-        const stored=reports.get(body.runId);
+        const signedReport=codec.decode(body.reportToken,'report');
+        const stored=signedReport?.runId===body.runId?{report:signedReport,time:Date.now()}:reports.get(body.runId);
         if(!stored||Date.now()-stored.time>60*60*1000)throw fail('This investigation expired. Run the collision again.',404);
         const goal=body.goal??'collaboration',tolerance=body.tolerance??.1;
         if(!Object.hasOwn(goals,goal)||typeof tolerance!=='number'||!Number.isFinite(tolerance)||tolerance<0||tolerance>.5)throw fail('Choose a valid project goal and balance window.');

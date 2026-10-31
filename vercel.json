@@ -1,0 +1,5 @@
+{
+  "outputDirectory": "app/public",
+  "functions": {"api/index.mjs": {"maxDuration": 300}},
+  "rewrites": [{"source": "/api/:path*", "destination": "/api"}]
+}

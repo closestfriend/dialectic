@@ -74,7 +74,7 @@ $('collide').addEventListener('click',async()=>{
   status('Following both worlds through film, music, books, places, and brands…','busy');
   const started=performance.now();
   try {
-    const data=await api('/api/collide',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({a:state.a.entity_id,b:state.b.entity_id})});
+    const data=await api('/api/collide',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({a:state.a.entity_id,b:state.b.entity_id,selectionTokens:[state.a.selectionToken,state.b.selectionToken]})});
     if(epoch!==state.epoch)return;
     state.data=data;state.domain='all';$('results').hidden=false;
     const successes=data.domains.filter(d=>d.status==='ok').length;
@@ -89,7 +89,7 @@ async function buildBrief(){
   const epoch=state.epoch;lock(true);briefLoading();
   status('Testing reference candidates against each seed separately and preparing three directions…','busy');
   try{
-    const brief=await api('/api/brief',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({runId:state.data.runId,goal:$('project-goal').value,tolerance:Number($('tolerance').value)/100})});
+    const brief=await api('/api/brief',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({runId:state.data.runId,reportToken:state.data.reportToken,goal:$('project-goal').value,tolerance:Number($('tolerance').value)/100})});
     if(epoch!==state.epoch)return;
     state.data.evidence=brief.evidence;
     renderBrief(brief);renderResults();

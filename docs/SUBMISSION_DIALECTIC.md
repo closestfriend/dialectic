@@ -11,7 +11,7 @@ deliverable, and a reason to believe the pairing deserves a test.
 
 ## What we built
 
-DIALECTIC is a local commissioning instrument. Select two exact Qloo entities,
+DIALECTIC is a commissioning instrument. Select two exact Qloo entities,
 choose a collaboration, audience-introduction or programming goal, and receive
 up to three draft directions drawn from measured cross-domain recommendations.
 
@@ -112,17 +112,16 @@ This evaluation does not measure originality or commercial viability.
 - No location/popularity filtering, live availability checks or rights clearance.
 - The local backend has a shared 250 ms queue, cache and no automatic retries.
   Multiple server processes would need a shared credential-wide limiter.
-- Not publicly deployed or submitted. Existing macOS Git tooling and dependency
-  advisories are recorded in [LOCAL_SETUP.md](../LOCAL_SETUP.md).
+- Hosted on Vercel at https://dialectic-zeta.vercel.app. The Qloo credential
+  remains server-only; MLflow is optional and is not required by the hosted app.
+- API pacing and caches are per function instance; multiple instances do not
+  share a credential-wide queue.
 
 ## Source repository
 
-A standalone private mirror of the DIALECTIC source was pushed to GitHub on
-2026-10-29 as `https://github.com/closestfriend/dialectic` (private repo,
-`main` at commit `38ebe34`). It contains `app/`, `scripts/`, the root
-`package.json` and docs/screenshots; `.env`, node_modules, MLflow venv/state
-and DS_Store files are excluded. The kit checkout remains the working
-workspace with the live `.env`.
+Public source: https://github.com/closestfriend/dialectic.
+The repository includes source, screenshots, setup instructions and an MIT license.
+Secrets, dependencies and local MLflow state are excluded.
 
 ## Demo materials
 

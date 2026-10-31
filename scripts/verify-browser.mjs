@@ -7,7 +7,7 @@ try{
   const context=await browser.newContext({viewport:{width:1440,height:1050},deviceScaleFactor:1,acceptDownloads:true});
   const page=await context.newPage();
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
-  await page.goto('http://127.0.0.1:4317');
+  await page.goto(process.env.BASE_URL??'http://127.0.0.1:4317');
   await page.locator('[data-pair="0"]').click();
   await page.locator('#matches-a .match').first().click();await page.locator('#matches-b .match').first().click();
   await page.locator('#collide').click();
