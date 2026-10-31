@@ -26,30 +26,33 @@ export function invalidateBrief(goal,tolerance){
   const stale=current.basis.goal!==goal||Math.abs(current.basis.tolerance-tolerance)>1e-10;
   $('brief-cards').hidden=stale;$('brief-ledger-wrap').hidden=stale;$('refresh-brief').hidden=!stale;setActions(!stale);
   $('markdown-wrap').hidden=stale;if(stale)$('markdown-wrap').open=false;
-  $('brief-notice').textContent=stale?'Your goal or balance window changed. Rebuild the brief to use the current evidence selection.':
-    'Qloo observations below support reference selection. The proposed commissions are editorial starting points for a team to develop and test.';
+  $('brief-notice').textContent=stale?'Your settings changed. Update the brief to use this goal and balance window.':
+    'Commission starting points for your team to develop. Qloo grounds the references; the proposed work still needs testing.';
 }
 export function renderBrief(brief){
   current=brief;$('brief-section').hidden=false;$('brief-cards').hidden=false;$('brief-ledger-wrap').hidden=false;$('markdown-wrap').hidden=false;
   $('brief-title').textContent=`${brief.seeds[0].name} × ${brief.seeds[1].name}`;
   $('brief-basis').textContent=`${brief.basis.label} / ${brief.basis.window} attribution window`;
   $('brief-notice').textContent=brief.directions.length?
-    'Qloo observations below support reference selection. The proposed commissions are editorial starting points for a team to develop and test.':
+    'Commission starting points for your team to develop. Qloo grounds the references; the proposed work still needs testing.':
     'No reference meets this balance window. Widen it or choose another pair; the tool will not invent evidence to fill three slots.';
   $('refresh-brief').hidden=true;setActions(true);
   $('brief-cards').innerHTML=brief.directions.map((d,i)=>`<article class="brief-card">
-    <div class="direction-label"><span>Direction ${i+1}</span><span>${esc(d.proposal.format)}</span></div>
+    <div class="direction-label"><span>Starting point ${i+1}</span><span>${esc(d.proposal.format)}</span></div>
     <h3>${esc(d.proposal.title)}</h3>
-    <div class="brief-observation"><span class="section-label">Qloo observation</span><p><strong>${esc(d.anchor.name)}</strong> carries <span class="thesis-color">${pct(d.observation.shareA)} A</span> / <span class="antithesis-color">${pct(d.observation.shareB)} B</span> normalized seed attribution.</p>
+    <div class="proposal-copy"><h4>What to make</h4><p class="commission-deliverable">${esc(d.proposal.deliverable)}.</p><h4>First step</h4><p class="commission-start">${esc(d.proposal.nextStep)}</p></div>
+    <div class="brief-observation brief-evidence-summary"><span class="section-label">Reference evidence</span><p><span class="thesis-color">${pct(d.observation.shareA)} ${esc(brief.seeds[0].name)}</span> / <span class="antithesis-color">${pct(d.observation.shareB)} ${esc(brief.seeds[1].name)}</span></p>
       <p class="corroboration ${d.check.status==='seen_in_both'?'corroborated':''}">${esc(checkLabels[d.check.status])}</p>
-      <div class="shortlist-checks">${[d.check.a,d.check.b].map((c,side)=>`<span>${side?'B':'A'}: ${c.status==='present'?`rank ${c.rank}`:c.status==='not_observed'?'not in top 20':'unavailable'}</span>`).join('')}</div>
     </div>
-    <div class="proposal-copy"><span class="section-label">Proposed commission</span><p>${esc(d.proposal.premise)}</p>${d.proposal.catalogCues.length?`<p class="catalog-cues">Catalog references: ${esc(d.proposal.catalogCues.join(', '))}</p>`:''}
-      <h4>What the team makes</h4><p>${esc(d.proposal.deliverable)}.</p><h4>Start here</h4><p>${esc(d.proposal.nextStep)}</p>
+    <details class="commission-details"><summary>Develop this direction & inspect evidence</summary>
+      <p>${esc(d.proposal.premise)}</p>${d.proposal.catalogCues.length?`<p class="catalog-cues">Catalog references: ${esc(d.proposal.catalogCues.join(', '))}</p>`:''}
       <h4>Keep both worlds present</h4><ul>${d.proposal.creativeConstraints.map(c=>`<li>${esc(c)}</li>`).join('')}</ul>
       <div class="rejection"><h4>Reason to reject it</h4><p>${esc(d.proposal.rejectIf)}</p></div>
-    </div>
-    <details><summary>Source and limits</summary><p>Joint affinity: ${typeof d.observation.affinity==='number'?d.observation.affinity.toFixed(3):'unavailable'}. Shortlist absence is not evidence of no affinity. Participation, rights, availability and demand remain untested.</p><pre>${esc(JSON.stringify({entity:d.anchor.entity_id,observation:d.observation,independentChecks:d.check},null,2))}</pre></details>
+      <h4>What Qloo observed</h4><p>${esc(d.anchor.name)} was returned for the two seeds together. The percentages above normalize the two seeds' recommendation scores; they do not measure audience size or validate the commission.</p>
+      <div class="shortlist-checks">${[d.check.a,d.check.b].map((c,side)=>`<span>${esc(brief.seeds[side].name)}: ${c.status==='present'?`rank ${c.rank}`:c.status==='not_observed'?'not in top 20':'unavailable'}</span>`).join('')}</div>
+      <p>Joint affinity: ${typeof d.observation.affinity==='number'?d.observation.affinity.toFixed(3):'unavailable'}. Shortlist absence is inconclusive. Participation, rights, availability and demand remain untested.</p>
+      <details><summary>Raw evidence</summary><pre>${esc(JSON.stringify({entity:d.anchor.entity_id,observation:d.observation,independentChecks:d.check},null,2))}</pre></details>
+    </details>
   </article>`).join('');
   $('brief-ledger').innerHTML=brief.ledger.map(entry=>`<li><strong>${esc(entry.step)}</strong><span class="ledger-status">${entry.status==='error'?'Unresolved':'Recorded'}</span><p>${esc(entry.observation)}</p>${entry.evidenceId?`<code>${esc(entry.evidenceId)}</code>`:''}</li>`).join('');
   $('brief-markdown').value=brief.markdown;

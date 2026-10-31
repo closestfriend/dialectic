@@ -12,14 +12,23 @@ async function api(path,options={}) {
   if(!response.ok) throw Error(data.error??'The request could not complete.');
   return data;
 }
-function clearResults(){state.data=null;state.epoch++;$('results').hidden=true;$('idle').hidden=false;resetBrief();}
+function selectionGuidance(){
+  if(state.a&&state.b)return 'Both worlds selected. Build your commissioning brief when you’re ready.';
+  if(state.a||state.b)return 'Choose an exact match for the other world to continue.';
+  return state.matches.a.length||state.matches.b.length?'Choose the exact entity on each side to continue.':'Search both worlds, then choose the entities you mean.';
+}
+function clearResults(){state.data=null;state.epoch++;$('results').hidden=true;$('idle').hidden=false;resetBrief();status(selectionGuidance());}
 function drawMatches(side) {
   const selected=state[side];
   const entries=selected?[selected]:state.matches[side];
-  $(`matches-${side}`).innerHTML=entries.map((x,i)=>`<button type="button" class="match ${selected?'selected':''}" data-side="${side}" data-match="${i}" aria-pressed="${Boolean(selected)}"><span><strong>${escape(x.name)}</strong><small>${escape(x.types.map(t=>t.split(':').at(-1).replaceAll('_',' ')).join(', '))}${x.disambiguation?' / '+escape(x.disambiguation):''}</small></span><span class="confirmed-icon">${selected?'✓ Selected':'Select'}</span></button>`).join('');
+  $(`matches-${side}`).innerHTML=entries.map((x,i)=>`<button type="button" class="match ${selected?'selected':''}" data-side="${side}" data-match="${i}" aria-pressed="${Boolean(selected)}"${selected?' aria-label="Change selection: '+escape(x.name)+'"':''}><span><strong>${escape(x.name)}</strong><small>${escape(x.types.map(t=>t.split(':').at(-1).replaceAll('_',' ')).join(', '))}${x.disambiguation?' / '+escape(x.disambiguation):''}${selected?' / ✓ Selected':''}</small></span><span class="confirmed-icon">${selected?'Change':'Select'}</span></button>`).join('');
   if(!entries.length) $(`matches-${side}`).innerHTML='<p class="seed-hint">No matches. Try a more specific name.</p>';
 }
-function updateButton(){$('collide').disabled=state.busy;$('collide').firstChild.textContent=state.busy?'Investigating… ':state.a&&state.b?'Build commissioning brief ':'Find the collision ';}
+function updateButton(){
+  $('collide').disabled=state.busy;
+  const choosing=state.a||state.b||state.matches.a.length||state.matches.b.length;
+  $('collide').firstChild.textContent=state.busy?'Investigating… ':state.a&&state.b?'Build commissioning brief ':choosing?'Select both entities ':'Search both worlds ';
+}
 async function search(side) {
   const query=$(`seed-${side}`).value.trim();
   const version=++state.versions[side];
@@ -29,7 +38,7 @@ async function search(side) {
   try {
     const data=await api('/api/search?q='+encodeURIComponent(query));
     if(version!==state.versions[side])return;
-    state.matches[side]=data.entities;drawMatches(side);
+    state.matches[side]=data.entities;drawMatches(side);updateButton();status(selectionGuidance());
   } catch(error) {
     if(version!==state.versions[side])return;
     $(`matches-${side}`).innerHTML=`<p class="seed-hint">${escape(error.message)}</p>`;
@@ -39,7 +48,7 @@ for(const side of ['a','b']) {
   $(`form-${side}`).addEventListener('submit',event=>{event.preventDefault();if(!state.busy)search(side);});
   $(`seed-${side}`).addEventListener('input',()=>{
     state.versions[side]++;state[side]=null;state.matches[side]=[];clearResults();updateButton();
-    $(`matches-${side}`).innerHTML='<p class="seed-hint">Search, then choose the entity you mean.</p>';status('');
+    $(`matches-${side}`).innerHTML='<p class="seed-hint">Search, then choose the entity you mean.</p>';
   });
   $(`matches-${side}`).addEventListener('click',event=>{
     const button=event.target.closest('[data-match]');if(!button||state.busy)return;
@@ -47,7 +56,7 @@ for(const side of ['a','b']) {
     state[side]=state.matches[side][Number(button.dataset.match)];
     if(!state[side])return;
     drawMatches(side);clearResults();updateButton();
-    status(state.a&&state.b?'Both worlds selected. Start the collision when you’re ready.':'Select a match for the other world.');
+    status(selectionGuidance());
   });
 }
 document.querySelectorAll('[data-pair]').forEach(button=>button.addEventListener('click',async()=>{
@@ -65,8 +74,12 @@ function lock(locked){
 $('collide').addEventListener('click',async()=>{
   if(state.busy)return;
   if(!state.a||!state.b){
-    status('First, search and select an exact entity on both sides.');
-    await Promise.all(['a','b'].filter(side=>!state[side]).map(search));return;
+    const unresolved=['a','b'].filter(side=>!state[side]);
+    const needsSearch=unresolved.filter(side=>!state.matches[side].length);
+    if(needsSearch.length)await Promise.all(needsSearch.map(search));
+    status(selectionGuidance());
+    const next=unresolved[0];
+    ($(`matches-${next}`).querySelector('.match')??$(`seed-${next}`)).focus();return;
   }
   if(state.a.entity_id===state.b.entity_id){status('Choose two different entities to find a collision.','error');return;}
   const epoch=state.epoch;
@@ -94,6 +107,8 @@ async function buildBrief(){
     state.data.evidence=brief.evidence;
     renderBrief(brief);renderResults();
     status(`${state.data.domains.filter(d=>d.status==='ok').length} domains explored. ${state.data.candidates.length} candidates examined. ${brief.directions.length} proposed directions; ${brief.directions.filter(d=>d.check.status==='seen_in_both').length} references seen in both independent shortlists.`);
+    const heading=$('brief-title');heading.tabIndex=-1;heading.focus({preventScroll:true});
+    $('brief-section').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
   }catch(error){briefError(error.message);status('Candidate results are available. The commissioning brief needs another attempt.','error');}
   finally{lock(false);}
 }
@@ -117,7 +132,9 @@ function renderResults() {
   const visible=data.candidates.filter(c=>(state.domain==='all'||c.domain===state.domain)&&(showExcluded||qualifies(c)));
   $('candidates').innerHTML=visible.length?visible.map(c=>{
     const b=c.balance,qualified=qualifies(c),originalIndex=data.candidates.indexOf(c);
-    return `<article class="candidate"><div class="candidate-art">${c.image?`<img src="${escape(c.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:`<div class="art-type" aria-hidden="true">${escape(domainNames[c.domain].slice(0,1))}</div>`}</div><div class="candidate-body"><div class="candidate-domain"><span>${escape(domainNames[c.domain])}</span><span class="${qualified?'':'excluded-badge'}">${qualified?'Within balance window':b?'Outside balance window':'Attribution unavailable'}</span></div><h3>${escape(c.name)}</h3><p class="disambiguation">${escape(c.disambiguation)}</p>${c.description?`<p class="candidate-description">${escape(c.description)}</p>`:''}<div class="balance-block">${b?`<div class="balance-labels"><span>A ${percent(b.shareA)}</span><span>B ${percent(b.shareB)}</span></div><div class="balance-track" role="img" aria-label="Thesis contribution ${percent(b.shareA)}, antithesis ${percent(b.shareB)}"><span data-share="${originalIndex}"></span><span></span></div><p class="balance-note">Normalized seed attribution${typeof c.query.affinity==='number'?` / joint affinity ${c.query.affinity.toFixed(3)}`:''}</p>`:'<p class="balance-note">No balance score: both seed scores are required.</p>'}</div><details><summary>Why this result?</summary><p>Seed scores explain Qloo’s recommendation, not audience percentages. Pair normalization compares A and B; it does not prove causal influence.</p><pre>${escape(JSON.stringify({entity_id:c.entity_id,affinity:c.query.affinity,explainability:c.query.explainability,balance:c.balance},null,2))}</pre></details></div></article>`;
+    const [seedA,seedB]=data.seeds.map(x=>escape(x.name));
+    const explanation=b?`Qloo returned ${escape(c.name)} when ${seedA} and ${seedB} were supplied together. Of the attribution assigned to these two seeds, ${seedA} contributed ${percent(b.shareA)} and ${seedB} contributed ${percent(b.shareB)}.`:`Qloo returned ${escape(c.name)} for this pair, but did not provide usable attribution for both seeds. It cannot be used as a balanced reference.`;
+    return `<article class="candidate candidate-${escape(c.domain)}"><div class="candidate-art">${c.image?`<img src="${escape(c.image)}" alt="" width="400" height="220" loading="lazy" referrerpolicy="no-referrer">`:`<div class="art-type" aria-hidden="true">${escape(domainNames[c.domain].slice(0,1))}</div>`}</div><div class="candidate-body"><div class="candidate-domain"><span>${escape(domainNames[c.domain])}</span><span class="${qualified?'':'excluded-badge'}">${qualified?'Within balance window':b?'Outside balance window':'Attribution unavailable'}</span></div><h3>${escape(c.name)}</h3><p class="disambiguation">${escape(c.disambiguation)}</p>${c.description?`<p class="candidate-description">${escape(c.description)}</p>`:''}<div class="balance-block">${b?`<div class="balance-labels"><span title="${seedA}">${seedA} ${percent(b.shareA)}</span><span title="${seedB}">${seedB} ${percent(b.shareB)}</span></div><div class="balance-track" role="img" aria-label="${seedA} contribution ${percent(b.shareA)}, ${seedB} ${percent(b.shareB)}"><span data-share="${originalIndex}"></span><span></span></div><p class="balance-note">Normalized seed attribution${typeof c.query.affinity==='number'?` / joint affinity ${c.query.affinity.toFixed(3)}`:''}</p>`:'<p class="balance-note">No balance score: both seed scores are required.</p>'}</div><details><summary>Why this result?</summary><p>${explanation}</p><p>These scores explain the recommendation; they do not measure audience size or prove demand.</p><details><summary>Raw Qloo evidence</summary><pre>${escape(JSON.stringify({entity_id:c.entity_id,affinity:c.query.affinity,explainability:c.query.explainability,balance:c.balance},null,2))}</pre></details></details></div></article>`;
   }).join(''):`<div class="empty"><h3>${data.domains.every(d=>d.status==='error')?'The investigation could not reach Qloo.':'No measured bridge in this window.'}</h3><p>${data.domains.every(d=>d.status==='error')?'Review the domain errors above, then try the collision again.':'Widen the balance window, explore another domain, or show excluded candidates to see what fell outside the threshold. A missing bridge is a result too.'}</p></div>`;
   document.querySelectorAll('[data-share]').forEach(span=>{
     const b=data.candidates[Number(span.dataset.share)].balance;
@@ -140,3 +157,4 @@ $('export').addEventListener('click',()=>{
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='dialectic-evidence.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
 $('method-button').addEventListener('click',()=>{$('method').hidden=!$('method').hidden;if(!$('method').hidden){$('method').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});$('method').focus({preventScroll:true});}});
+updateButton();

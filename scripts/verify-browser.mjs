@@ -42,6 +42,16 @@ try{
   assert.equal(await page.locator('#results').isVisible(),false);
   assert.equal(await page.locator('.brief-card').first().isVisible(),true);
   await page.emulateMedia({media:'screen'});
+  // Regression: a new selection must never display the previous run's success.
+  await page.locator('#matches-a .match').click();
+  assert.equal(await page.locator('#brief-section').isHidden(),true);
+  assert.doesNotMatch(await page.locator('#status').innerText(),/proposed directions|domains explored/);
+  await page.locator('#matches-a .match').first().click();
+  await page.locator('#collide').click();
+  await page.waitForFunction(()=>document.querySelectorAll('.brief-card').length===3&&!document.querySelector('#collide').disabled);
+  await page.setViewportSize({width:1440,height:1050});
+  const sizes=await page.locator('.candidate').evaluateAll(xs=>xs.slice(0,3).map(x=>Math.round(x.getBoundingClientRect().width)));
+  assert.ok(Math.max(...sizes)-Math.min(...sizes)<=2,'Candidate cards must use equal column widths');
   assert.deepEqual(errors,[]);
   console.log(JSON.stringify({directions:3,download:download.suggestedFilename(),goalInvalidation:true,emptyState:true,mobileOverflow:false,printView:true,pageErrors:errors},null,2));
 }finally{await browser.close();}

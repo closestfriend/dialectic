@@ -79,4 +79,4 @@ This is an editorial starting point. Qloo supports the reference selection; it d
 - Creative directions are editorial templates, not Qloo findings or an LLM-generated strategy.
 - References do not imply participation, endorsement, availability, or licensing rights.
 
-Generated: 2026-10-31T02:25:39.272Z
+Generated: 2026-10-31T03:08:20.381Z
