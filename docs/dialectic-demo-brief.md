@@ -5,7 +5,9 @@ Balance window: 40–60%
 
 An evidence-led commissioning draft. Proposed directions require human development and testing.
 
-## 1. Build a room around Sleep No More
+Concept synthesis: AI-generated via anthropic/claude-sonnet-5.5. Qloo grounds the references; AI proposes the creative concepts.
+
+## 1. The Hosted Hallucination
 
 ### Qloo observation
 Reference: Sleep No More (place; 0D482FC5-C668-4D49-81FB-B341B0A64684).
@@ -14,17 +16,18 @@ Independent shortlist check: needs testing.
 Evidence: 675866e173d12eb7c28f349b81d0c2e720a0a1afcb5823db7af9750fab0abfdb.
 
 ### Proposed direction
-Commission a new piece connecting Aphex Twin and Martha Stewart, using Sleep No More as a reference to investigate rather than a finished concept.
+Source: AI-synthesized commission concept.
+Speculative proposal for a one-night, small-scale walk-through experience inspired by Sleep No More's roaming, mask-and-wander structure as a reference only, not a partner. Each room is a domestic 'entertaining' set in the Martha Stewart idiom: place settings, folded linens, a seasonal centerpiece. Each is gradually corrupted by sound in the manner of Aphex Twin: a hidden speaker bank plays pitch-shifted, time-stretched recordings of the room's own objects, so a whisk, a napkin fold and a ticking oven timer become a rhythmic, unsettling score. Masked guests are given a simple host task in each room (set a table, plate a dish) and hear their actions returned as glitching, granular music.
 
-Deliverable: A spatial treatment and a small invitation-only prototype.
-Next step: Ask an experience designer to turn this reference into a floor plan, running order, and one participatory moment.
-Rejection criterion: Reject or revise if a small prototype cannot communicate a clear role for each seed without an explanatory pitch. Test interest, feasibility, rights, and availability separately.
-- Name one specific quality of Aphex Twin that the work must preserve.
-- Name one specific quality of Martha Stewart that must also shape the work.
+Deliverable: A paper-and-audio prototype of three connected rooms in a rented hall or studio, with 8-10 invited testers, a floor plan, a one-page guest task card per room, and a 12-minute stereo mock-up of the objects-to-score audio layer..
+Next step: Record 30 minutes of close-miked sounds from a single place setting and baking session, then process them into a 2-minute loop for one room. Run it with 3 friendly testers while they perform a table-setting task.
+Rejection criterion: In testing, fewer than 6 of 8 testers can complete a room's domestic task and then identify, afterward, at least one of their own actions in the score, or testers describe the rooms as generic spooky theater rather than a domestic setting being altered by sound.
+- Aphex Twin seed: every sound in the score must be derived from recordings of the room's own domestic objects and processed (stretched, granulated, detuned). No external synth pads or stock samples.
+- Martha Stewart seed: every room must contain a fully executable, instruction-card-style domestic task (fold, plate, arrange) with a clear correct result, and the guest's finished work must remain visible after the sound distorts.
 
-This is an editorial starting point. Qloo supports the reference selection; it does not validate the proposed commission or partner interest.
+AI-generated creative interpretation. Qloo supports reference selection; it does not validate this concept, demand, participation or rights.
 
-## 2. Develop a listening work around LFO
+## 2. Recipe for Eleven Minutes
 
 ### Qloo observation
 Reference: LFO (artist; 9FDB8A60-ABAA-497F-BF66-8A0138184170).
@@ -33,17 +36,18 @@ Independent shortlist check: needs testing.
 Evidence: e559e4a5487d61c145b7dc3a6e209e6e2730ae8577aa6adad94a40e7bff0c554.
 
 ### Proposed direction
-Commission a new piece connecting Aphex Twin and Martha Stewart, using LFO as a reference to investigate rather than a finished concept.
+Source: AI-synthesized commission concept.
+Speculative proposal for a listening commission that takes LFO's bright, bass-heavy early-electronic sensibility as a reference influence, with no assumption of involvement. A short piece is built as a literal timed recipe: each section of the track is a cooking or craft step in Martha Stewart's precise, instructional register (cream, fold, proof, rest), and the music's structure is the method. Listeners receive a printed card and a small kit, then follow it by ear while Aphex Twin-style rhythmic mutation breaks each step's tempo, so the 'rest' step is a stuttering ambient break and the 'whisk' step is a fast drill pattern.
 
-Deliverable: An original sound treatment and a short listening-session pilot.
-Next step: Ask a music supervisor to assemble a reference sequence, then commission a short original sketch with two distinct creative constraints.
-Rejection criterion: Reject or revise if listeners recognize only one seed in the sketch, or it depends on unlicensed recordings. Test interest, feasibility, rights, and availability separately.
-- Name one specific quality of Aphex Twin that the work must preserve.
-- Name one specific quality of Martha Stewart that must also shape the work.
+Deliverable: An 11-minute stereo audio piece, a printed one-page recipe-score card with timestamps, and a simple kit list (e.g., ingredients for a no-bake dessert) for a small listening session..
+Next step: Write the recipe-score card with 6 timestamped steps, then sketch a rough 90-second demo of the 'whisk' section where the drum pattern speeds up and mutates, and test it with 2 listeners making the dish.
+Rejection criterion: Testers following the card with the audio cannot finish the dish within 11 minutes plus 4 minutes, or in a blind listen the audio without the card is described as just an electronic track with no sense of stepwise instruction.
+- Aphex Twin seed: the rhythm of each step must mutate at least twice within its section (shifting time signature, subdividing, or stuttering) while maintaining a recognizable pulse that returns at the section's end.
+- Martha Stewart seed: the card must be a usable, tested recipe in clear imperative language with exact quantities and times, and the final dish must be edible and replicable without the audio.
 
-This is an editorial starting point. Qloo supports the reference selection; it does not validate the proposed commission or partner interest.
+AI-generated creative interpretation. Qloo supports reference selection; it does not validate this concept, demand, participation or rights.
 
-## 3. Test an activation with MasterClass
+## 3. Unlearn the Lesson
 
 ### Qloo observation
 Reference: MasterClass (brand; 64DE0A20-BE82-481A-A875-9AEAA941DEB1).
@@ -52,15 +56,16 @@ Independent shortlist check: needs testing.
 Evidence: ae9c1e93b5b4b719bb2baf4acb4f6564f58327c282141fc6a9bcbf70b0fb6167.
 
 ### Proposed direction
-Commission a new piece connecting Aphex Twin and Martha Stewart, using MasterClass as a reference to investigate rather than a finished concept.
+Source: AI-synthesized commission concept.
+Speculative proposal for a partnership pitch to an online-learning platform, with MasterClass used only as a reference for format and not as a confirmed partner. The pitch is a prototype lesson series in which a domestic craft is taught with Martha Stewart's methodical clarity, while the lesson's soundtrack and interface are made generative in an Aphex Twin spirit. The learner builds the lesson's music by completing the craft's steps. Each correct action (measuring, tying, folding) triggers or mutates a layer of the score, so the finished project and a unique track are produced together.
 
-Deliverable: A partner pitch with one tangible activation and a small concept test.
-Next step: Prepare two activation storyboards using this brand as a prospect, then test which communicates a role for both seeds before making contact.
-Rejection criterion: Reject or revise if the concept works equally well with any unrelated sponsor, or a small test finds no clear reason for this pairing. Test interest, feasibility, rights, and availability separately.
-- Name one specific quality of Aphex Twin that the work must preserve.
-- Name one specific quality of Martha Stewart that must also shape the work.
+Deliverable: A clickable web prototype of one 10-minute lesson with a lesson plan, a storyboard, a short interface demo, a 2-page partnership proposal, and a one-page template for how a future lesson might be structured..
+Next step: Choose one simple craft (such as tying a bundle of herbs) and storyboard 5 steps, each tied to one sound layer. Build a rough click-through in a prototyping tool with placeholder audio and test it with 3 beginners.
+Rejection criterion: Beginners in a 3-person test finish the craft less successfully with the interactive audio than with a silent text version, or cannot tell their two runs apart by ear.
+- Aphex Twin seed: the soundtrack must be generated by learner actions, with each step adding or altering a layer. The same lesson run twice should yield audibly different tracks.
+- Martha Stewart seed: the lesson must teach one complete project from materials list to finished object, with instructions precise enough that a beginner can reproduce it with no music playing.
 
-This is an editorial starting point. Qloo supports the reference selection; it does not validate the proposed commission or partner interest.
+AI-generated creative interpretation. Qloo supports reference selection; it does not validate this concept, demand, participation or rights.
 
 ## Evidence ledger
 
@@ -76,7 +81,7 @@ This is an editorial starting point. Qloo supports the reference selection; it d
 
 - Pair attribution is not audience size or proof of demand.
 - Independent checks observe top-20 shortlist membership, not directly comparable cross-query affinity scores.
-- Creative directions are editorial templates, not Qloo findings or an LLM-generated strategy.
+- Creative proposals are AI-generated interpretations, not Qloo findings or validated strategies.
 - References do not imply participation, endorsement, availability, or licensing rights.
 
-Generated: 2026-10-31T03:08:20.381Z
+Generated: 2026-10-31T03:26:43.577Z

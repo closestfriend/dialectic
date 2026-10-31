@@ -11,8 +11,12 @@ try{
   await page.locator('[data-pair="0"]').click();
   await page.locator('#matches-a .match').first().click();await page.locator('#matches-b .match').first().click();
   await page.locator('#collide').click();
-  await page.waitForFunction(()=>document.querySelectorAll('.brief-card').length===3&&!document.querySelector('#collide').disabled,{timeout:90_000});
+  await page.waitForFunction(()=>document.querySelectorAll('.brief-card').length===3&&!document.querySelector('#collide').disabled,null,{timeout:150_000});
   assert.equal(await page.locator('.brief-card').count(),3);
+  if(process.env.REQUIRE_SYNTHESIS==='1') {
+    assert.match(await page.locator('.direction-label').first().innerText(),/AI-synthesized/);
+    assert.ok((await page.locator('.commission-premise').first().innerText()).length>60);
+  }
   const event=page.waitForEvent('download');await page.locator('#download-brief').click();
   const download=await event;await download.saveAs('docs/dialectic-demo-brief.md');
   const downloaded=await fs.readFile('docs/dialectic-demo-brief.md','utf8');

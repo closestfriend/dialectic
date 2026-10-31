@@ -89,13 +89,15 @@ const clean=value=>String(value??'').replace(/[\r\n]+/g,' ').replace(/([\\`*_{}\
 export function briefMarkdown(brief) {
   const lines=[`# DIALECTIC: ${brief.seeds.map(x=>clean(x.name)).join(' × ')}`,'',`Project: ${brief.basis.label}`,`Balance window: ${brief.basis.window}`,'',
     'An evidence-led commissioning draft. Proposed directions require human development and testing.',''];
+  if(brief.synthesis?.status==='generated')lines.push(`Concept synthesis: AI-generated via ${clean(brief.synthesis.model??'Vercel AI Gateway')}. Qloo grounds the references; AI proposes the creative concepts.`, '');
+  else if(brief.synthesis?.status==='unavailable'&&brief.directions.length)lines.push('AI synthesis unavailable. Showing structured starting points from format templates.', '');
   if(!brief.directions.length)lines.push('No references met this balance window. Widen it or choose different entities.','');
   for(const [i,d] of brief.directions.entries())lines.push(`## ${i+1}. ${clean(d.proposal.title)}`,'','### Qloo observation',
     `Reference: ${clean(d.anchor.name)} (${d.anchor.domain}; ${d.anchor.entity_id}).`,
     `Normalized seed attribution: ${(100*d.observation.shareA).toFixed(1)}% / ${(100*d.observation.shareB).toFixed(1)}%. Joint affinity: ${d.observation.affinity??'unavailable'}.`,
     `Independent shortlist check: ${d.check.status.replaceAll('_',' ')}.`,
     `Evidence: ${d.observation.evidenceIds.join(', ')}.`,
-    '', '### Proposed direction',clean(d.proposal.premise),'',`Deliverable: ${clean(d.proposal.deliverable)}.`,
+    '', '### Proposed direction',`Source: ${d.proposal.kind==='ai_proposal'?'AI-synthesized commission concept':'Structured editorial template'}.`,clean(d.proposal.premise),'',`Deliverable: ${clean(d.proposal.deliverable)}`,
     `Next step: ${clean(d.proposal.nextStep)}`,`Rejection criterion: ${clean(d.proposal.rejectIf)}`,
     ...d.proposal.creativeConstraints.map(x=>`- ${clean(x)}`),'',clean(d.proposal.boundary),'');
   lines.push('## Evidence ledger','',...brief.ledger.map(x=>`- [${x.status}] ${clean(x.step)}: ${clean(x.observation)}${x.evidenceId?` (${x.evidenceId})`:''}`),'',

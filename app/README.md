@@ -1,7 +1,9 @@
 # DIALECTIC
 
-A commissioning application using direct Qloo REST calls. No model API key
-is needed. Live demo: https://dialectic-zeta.vercel.app.
+A commissioning application using direct Qloo REST calls and LLM synthesis
+through Vercel AI Gateway. Live demo: https://dialectic-zeta.vercel.app.
+Production Gateway requests use Vercel OIDC through the AI SDK; a separate
+provider API key is not required.
 MLflow tracing is an optional local backend integration; Playwright is a development
 dependency used for repeatable browser checks and screenshots.
 
@@ -30,8 +32,30 @@ The server binds only to loopback. Keep the terminal running; Ctrl-C stops it.
 
 Goal or balance-window changes hide the previous brief until it is rebuilt.
 Seed changes clear it. The reference shortlist is evidence; format-specific
-editorial proposals are visibly labeled, with deliverables, next steps and rejection
+AI proposals are visibly labeled, with deliverables, next steps and rejection
 criteria. Missing evidence yields fewer directions or explicit abstention.
+
+## Creative synthesis
+
+The backend first ranks Qloo candidates and performs the independent shortlist
+checks. It then passes selected public evidence to the AI SDK through Vercel AI
+Gateway, using `anthropic/claude-sonnet-5.5` by default. The model proposes an
+original premise, deliverable, first action, constraints and rejection test.
+Generated proposals do not change the measured scores or establish demand,
+endorsement, rights or availability. If synthesis is unavailable, the UI explicitly
+identifies its format-template fallback.
+
+Production uses Vercel's runtime OIDC authentication. For local synthesis:
+
+```sh
+vercel env pull .env.local
+node --env-file=.env --env-file=.env.local app/server.mjs
+```
+
+Refresh the local OIDC token with another pull when it expires. `.env` and
+`.env.local` are ignored and must remain private. `AI_GATEWAY_MODEL` can select
+another currently available Gateway model. Qloo exploration still works without
+AI access, with the disclosed template fallback.
 
 ## Optional local tracing and quality evaluation
 
@@ -104,9 +128,10 @@ or inaccurate; DIALECTIC does not generate these descriptions.
   search IDs expire after one hour; search again after a server restart.
 - No location or popularity filtering yet. Those need parameter-effect tests
   with representative fixtures before adding them to the UI.
-- No LLM planner: the investigation is a deterministic, inspectable tool chain.
-  Proposed commissions use disclosed editorial templates. Qloo does not write or
-  validate them.
+- Qloo investigation remains a deterministic, inspectable tool chain. A separate
+  LLM synthesis step proposes commissions from the selected evidence; Qloo does
+  not write or validate those proposals. Gateway failure yields a disclosed
+  template fallback.
 
 ## Code map
 
@@ -153,5 +178,7 @@ description, demo script, verified live example and screenshot links.
 The public demo is deployed on Vercel in the closestfriend Pro team. The root
 README records dependency advisories. Signed entity and report tokens let
 requests resume across function instances; caches and Qloo pacing remain per
-instance. Production requires only QLOO_API_KEY and QLOO_BASE_URL. MLflow
-remains an optional local integration.
+instance. Production requires QLOO_API_KEY and QLOO_BASE_URL plus Vercel's
+automatic OIDC identity for AI Gateway access. MLflow remains an optional local
+integration. Earlier recorded fixture and browser results above establish the
+evidence contract; they do not evaluate the creative quality of LLM synthesis.

@@ -2,15 +2,17 @@
 
 A commissioning application for the Qloo hackathon: collide two confirmed
 entities (thesis / antithesis) and discover recommendations across five domains
-using direct Qloo REST calls, with measured attribution — no model API key, no
-invented bridges. The interface is dependency-free and served by a loopback-only
-Node backend that owns credentials.
+using direct Qloo REST calls with measured attribution. An LLM then turns the
+selected references into original commission proposals through Vercel AI Gateway.
+The browser interface is dependency-free; the Node backend owns credentials.
 
 Live demo: **https://dialectic-zeta.vercel.app**
 
 Hosted on Vercel in the closestfriend Pro team. The Qloo API key is a private
 production environment variable. Signed selection and evidence tokens preserve
-the workflow across serverless cold starts. MLflow is optional for local evaluation.
+the workflow across serverless cold starts. AI SDK requests use Vercel OIDC
+authentication in production, with `anthropic/claude-sonnet-5.5` as the default
+model. No separate provider API key is needed. MLflow is optional for local evaluation.
 
 ## Run
 
@@ -25,13 +27,20 @@ npm run dev
 Open **http://127.0.0.1:4317**. Use `PORT=4318 npm run dev` if that port is
 busy. The server binds only to loopback; `Ctrl-C` stops it.
 
+For local AI synthesis, link the Vercel project and run `vercel env pull .env.local`,
+then start with `node --env-file=.env --env-file=.env.local app/server.mjs`.
+The local OIDC token expires; pull again when it does. Keep both files private.
+Without Gateway access, the app returns explicitly labeled template starting
+points so Qloo evidence remains usable.
+
 1. Search for the Thesis and Antithesis. Select an exact result on each side.
 2. Choose a project goal, then click **Build commissioning brief**. One catalog
    comparison and five domain requests run through a shared queue; request
    starts are at least 250 ms apart.
 3. Adjust the balance window or domain — these filters use returned data and
    make no further Qloo requests.
-4. Inspect the proposed directions, ledger and raw evidence. Export collision
+4. Inspect the AI-proposed directions, ledger and raw evidence. Generated ideas
+   remain distinct from Qloo observations. Export collision
    evidence as JSON or the brief as Markdown.
 
 ## Documentation
@@ -50,7 +59,7 @@ busy. The server binds only to loopback; `Ctrl-C` stops it.
 npm test
 ```
 
-Thirteen Node tests cover attribution ranking, balancing, the Qloo client
+Node tests cover attribution ranking, balancing, the Qloo client
 (cache, pacing, coalescing) and the server; browser checks live in
 `scripts/verify-browser.mjs`.
 

@@ -21,31 +21,34 @@ export function briefError(message){
   $('brief-section').hidden=false;$('brief-notice').textContent=message;$('refresh-brief').hidden=false;setActions(false);
 }
 function setActions(enabled){for(const id of ['copy-brief','download-brief','print-brief'])$(id).disabled=!enabled;}
+function synthesisNotice(brief){
+  if(!brief.directions.length)return 'No reference meets this balance window. Widen it or choose another pair; the tool will not invent evidence to fill three slots.';
+  if(brief.synthesis?.status==='generated')return 'Qloo grounds the references. AI proposes the commission concepts; your team develops and tests them.';
+  if(brief.synthesis?.status==='unavailable')return 'AI synthesis unavailable. Showing a structured starting point. Qloo grounds the references; the proposed work still needs testing.';
+  return 'Commission starting points for your team to develop. Qloo grounds the references; the proposed work still needs testing.';
+}
 export function invalidateBrief(goal,tolerance){
   if(!current)return;
   const stale=current.basis.goal!==goal||Math.abs(current.basis.tolerance-tolerance)>1e-10;
   $('brief-cards').hidden=stale;$('brief-ledger-wrap').hidden=stale;$('refresh-brief').hidden=!stale;setActions(!stale);
   $('markdown-wrap').hidden=stale;if(stale)$('markdown-wrap').open=false;
-  $('brief-notice').textContent=stale?'Your settings changed. Update the brief to use this goal and balance window.':
-    'Commission starting points for your team to develop. Qloo grounds the references; the proposed work still needs testing.';
+  $('brief-notice').textContent=stale?'Your settings changed. Update the brief to use this goal and balance window.':synthesisNotice(current);
 }
 export function renderBrief(brief){
   current=brief;$('brief-section').hidden=false;$('brief-cards').hidden=false;$('brief-ledger-wrap').hidden=false;$('markdown-wrap').hidden=false;
   $('brief-title').textContent=`${brief.seeds[0].name} × ${brief.seeds[1].name}`;
   $('brief-basis').textContent=`${brief.basis.label} / ${brief.basis.window} attribution window`;
-  $('brief-notice').textContent=brief.directions.length?
-    'Commission starting points for your team to develop. Qloo grounds the references; the proposed work still needs testing.':
-    'No reference meets this balance window. Widen it or choose another pair; the tool will not invent evidence to fill three slots.';
+  $('brief-notice').textContent=synthesisNotice(brief);
   $('refresh-brief').hidden=true;setActions(true);
   $('brief-cards').innerHTML=brief.directions.map((d,i)=>`<article class="brief-card">
-    <div class="direction-label"><span>Starting point ${i+1}</span><span>${esc(d.proposal.format)}</span></div>
+    <div class="direction-label"><span>${d.proposal.kind==='ai_proposal'?'AI-synthesized commission':'Structured starting point'} ${i+1}</span><span>${esc(d.proposal.format)}</span></div>
     <h3>${esc(d.proposal.title)}</h3>
-    <div class="proposal-copy"><h4>What to make</h4><p class="commission-deliverable">${esc(d.proposal.deliverable)}.</p><h4>First step</h4><p class="commission-start">${esc(d.proposal.nextStep)}</p></div>
-    <div class="brief-observation brief-evidence-summary"><span class="section-label">Reference evidence</span><p><span class="thesis-color">${pct(d.observation.shareA)} ${esc(brief.seeds[0].name)}</span> / <span class="antithesis-color">${pct(d.observation.shareB)} ${esc(brief.seeds[1].name)}</span></p>
+    <div class="proposal-copy"><p class="commission-premise">${esc(d.proposal.premise)}</p><h4>What to make</h4><p class="commission-deliverable">${esc(d.proposal.deliverable)}</p><h4>First step</h4><p class="commission-start">${esc(d.proposal.nextStep)}</p></div>
+    <div class="brief-observation brief-evidence-summary"><span class="section-label">Qloo reference: ${esc(d.anchor.name)}</span><p><span class="thesis-color">${pct(d.observation.shareA)} ${esc(brief.seeds[0].name)}</span> / <span class="antithesis-color">${pct(d.observation.shareB)} ${esc(brief.seeds[1].name)}</span></p>
       <p class="corroboration ${d.check.status==='seen_in_both'?'corroborated':''}">${esc(checkLabels[d.check.status])}</p>
     </div>
     <details class="commission-details"><summary>Develop this direction & inspect evidence</summary>
-      <p>${esc(d.proposal.premise)}</p>${d.proposal.catalogCues.length?`<p class="catalog-cues">Catalog references: ${esc(d.proposal.catalogCues.join(', '))}</p>`:''}
+      ${d.proposal.catalogCues.length?`<p class="catalog-cues">Catalog references: ${esc(d.proposal.catalogCues.join(', '))}</p>`:''}
       <h4>Keep both worlds present</h4><ul>${d.proposal.creativeConstraints.map(c=>`<li>${esc(c)}</li>`).join('')}</ul>
       <div class="rejection"><h4>Reason to reject it</h4><p>${esc(d.proposal.rejectIf)}</p></div>
       <h4>What Qloo observed</h4><p>${esc(d.anchor.name)} was returned for the two seeds together. The percentages above normalize the two seeds' recommendation scores; they do not measure audience size or validate the commission.</p>

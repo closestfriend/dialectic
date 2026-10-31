@@ -74,6 +74,7 @@ summary{min-height:36px;line-height:1.7}
 .brief-card .proposal-copy h4:not(:first-child){margin-top:22px}
 .brief-card .commission-deliverable{font-size:17px;line-height:1.55;color:var(--ink);font-weight:500}
 .brief-card .commission-start{font-size:13px;line-height:1.75}
+.brief-card .commission-premise{font-size:14px;line-height:1.75;color:var(--ink);margin:0 0 24px;overflow-wrap:anywhere}
 .brief-evidence-summary{padding:12px 14px;margin:24px 0 16px}
 .brief-evidence-summary p{font-size:11px;line-height:1.7}
 .brief-evidence-summary .corroboration{margin-top:7px;font-size:11px}

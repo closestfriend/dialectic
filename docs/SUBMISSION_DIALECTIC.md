@@ -22,8 +22,10 @@ Each direction separates:
 2. **Independent check:** whether that reference also appears in each seed's
    separate top-20 shortlist for its domain. Absence is reported as limited
    observation, never proof of no connection.
-3. **Proposed commission:** a format-specific editorial starting point with a
-   concrete deliverable, first action, creative constraints and rejection test.
+3. **Proposed commission:** an original LLM-generated starting point with a
+   concrete deliverable, first action, creative constraints and rejection test,
+   synthesized through Vercel AI Gateway from the selected evidence. If that
+   step is unavailable, a visibly labeled format-template fallback is returned.
 
 The user can adjust the balance window, inspect excluded candidates, read the
 investigation ledger, copy/download the brief, print it, or export source evidence.
@@ -49,6 +51,11 @@ The solver normalizes scores `a/(a+b)` and `b/(a+b)`, minimizes the greatest
 distance from 50%, and breaks ties by joint affinity. It diversifies the brief's
 reference domains and excludes missing, malformed, lopsided or ungrounded entries.
 
+After reference selection and independent checks, the AI SDK sends the public
+evidence to Vercel AI Gateway for creative synthesis. The default model is
+`anthropic/claude-sonnet-5.5`; production authentication uses Vercel OIDC.
+The model supplies the proposed work, while Qloo supplies the reference evidence.
+
 ## A real example
 
 Aphex Twin (artist) × Martha Stewart (author) returned 100 candidates in the first
@@ -71,7 +78,8 @@ Choose the Aphex Twin × Martha Stewart preset, then confirm artist and author.
 
 **15–35 seconds:** Build the commissioning brief. Show the three references and
 the concrete deliverable in one direction. Point out that the proposal is an
-editorial starting point, while the attribution comes from Qloo.
+AI-generated starting point, while the attribution comes from Qloo. The UI
+identifies whether AI synthesis or the template fallback produced the proposal.
 
 **35–55 seconds:** Open the ledger. Show how the independent checks qualify the
 initial result. “The tool shows what supports the idea and what still needs a test.”
@@ -107,8 +115,9 @@ This evaluation does not measure originality or commercial viability.
 - The search examines top-20 results per domain, not every node in Qloo's graph.
 - Independent shortlist absence remains inconclusive. Cross-query affinity
   values are not treated as comparable measurements.
-- Editorial directions use transparent format-specific templates. There is no
-  LLM planner or generated claim of creative validation.
+- LLM-generated directions are creative proposals, not verified facts or claims
+  of demand. A disclosed format-template fallback preserves the evidence workflow
+  if AI synthesis is unavailable.
 - No location/popularity filtering, live availability checks or rights clearance.
 - The local backend has a shared 250 ms queue, cache and no automatic retries.
   Multiple server processes would need a shared credential-wide limiter.

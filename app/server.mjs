@@ -7,6 +7,7 @@ import { randomUUID } from 'node:crypto';
 import { investigateBrief, briefMarkdown, goals } from './brief.mjs';
 import { traceOperation } from './tracing.mjs';
 import { stateCodec } from './state.mjs';
+import { synthesizeBrief } from './synthesis.mjs';
 
 const domains=['movie','artist','book','place','brand'];
 const publicFiles={'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/brief.js':['brief.js','text/javascript'],'/style.css':['style.css','text/css']};
@@ -38,6 +39,7 @@ async function jsonBody(req) {
 }
 export function createApp({client=createQlooClient({apiKey:process.env.QLOO_API_KEY,baseUrl:process.env.QLOO_BASE_URL}),stateSecret=process.env.STATE_SIGNING_SECRET??process.env.QLOO_API_KEY??randomUUID()}={}) {
   const codec=stateCodec(stateSecret);
+  const synthesisCache=new Map();
   const confirmed=new Map(),reports=new Map(); let collisions=0, searches=0,briefs=0;
   const server=http.createServer(async(req,res)=>{
     const send=(status,body)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(body));};
@@ -125,7 +127,18 @@ export function createApp({client=createQlooClient({apiKey:process.env.QLOO_API_
         briefs++;
         try {
           const brief=await traceOperation('DIALECTIC commissioning investigation',{runId:body.runId,goal,tolerance,seeds:stored.report.seeds.map(x=>({entity_id:x.entity_id,name:x.name}))},
-            ()=>investigateBrief(stored.report,client,{goal,tolerance}),{summarize:r=>({status:r.status,directions:r.directions,ledger:r.ledger,rejections:r.rejections})});
+            async()=>{
+              const cacheKey=body.runId+':'+goal+':'+tolerance;
+              const cached=synthesisCache.get(cacheKey);
+              if(cached&&Date.now()-cached.time<1800000)return cached.brief;
+              const grounded=await investigateBrief(stored.report,client,{goal,tolerance});
+              const result=await synthesizeBrief(grounded);
+              if(result.synthesis.status==='generated'){
+                if(synthesisCache.size>=20)synthesisCache.delete(synthesisCache.keys().next().value);
+                synthesisCache.set(cacheKey,{brief:result,time:Date.now()});
+              }
+              return result;
+            },{summarize:r=>({status:r.status,directions:r.directions,ledger:r.ledger,rejections:r.rejections,synthesis:r.synthesis})});
           send(200,{...brief,runId:body.runId,markdown:briefMarkdown(brief)});
         }finally{briefs--;}
         return;
