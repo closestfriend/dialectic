@@ -37,7 +37,7 @@ async function jsonBody(req) {
   for await(const chunk of req) {body+=chunk; if(Buffer.byteLength(body)>1500000) throw fail('Request is too large.',413);}
   try {return JSON.parse(body);} catch {throw fail('Send a valid JSON request.');}
 }
-export function createApp({client=createQlooClient({apiKey:process.env.QLOO_API_KEY,baseUrl:process.env.QLOO_BASE_URL}),stateSecret=process.env.STATE_SIGNING_SECRET??process.env.QLOO_API_KEY??randomUUID()}={}) {
+export function createApp({client=createQlooClient({apiKey:process.env.QLOO_API_KEY,baseUrl:process.env.QLOO_BASE_URL}),stateSecret=process.env.STATE_SIGNING_SECRET??process.env.QLOO_API_KEY??randomUUID(),synthesize=synthesizeBrief}={}) {
   const codec=stateCodec(stateSecret);
   const synthesisCache=new Map();
   const confirmed=new Map(),reports=new Map(); let collisions=0, searches=0,briefs=0;
@@ -132,7 +132,7 @@ export function createApp({client=createQlooClient({apiKey:process.env.QLOO_API_
               const cached=synthesisCache.get(cacheKey);
               if(cached&&Date.now()-cached.time<1800000)return cached.brief;
               const grounded=await investigateBrief(stored.report,client,{goal,tolerance});
-              const result=await synthesizeBrief(grounded);
+              const result=await synthesize(grounded);
               if(result.synthesis.status==='generated'){
                 if(synthesisCache.size>=20)synthesisCache.delete(synthesisCache.keys().next().value);
                 synthesisCache.set(cacheKey,{brief:result,time:Date.now()});

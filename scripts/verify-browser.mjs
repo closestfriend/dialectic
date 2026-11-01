@@ -38,7 +38,7 @@ try{
   await page.waitForFunction(()=>document.querySelector('#brief-notice').textContent.includes('No reference meets'));
   assert.equal(await page.locator('.brief-card').count(),0);
   await page.locator('#tolerance').fill('10');await page.locator('#refresh-brief').click();
-  await page.waitForFunction(()=>document.querySelectorAll('.brief-card').length===3&&!document.querySelector('#collide').disabled);
+  await page.waitForFunction(()=>document.querySelectorAll('.brief-card').length===3&&!document.querySelector('#collide').disabled,null,{timeout:150_000});
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),390);
   await page.locator('.brief-card').first().screenshot({path:'docs/dialectic-commissioning-mobile.png'});
@@ -52,7 +52,7 @@ try{
   assert.doesNotMatch(await page.locator('#status').innerText(),/proposed directions|domains explored/);
   await page.locator('#matches-a .match').first().click();
   await page.locator('#collide').click();
-  await page.waitForFunction(()=>document.querySelectorAll('.brief-card').length===3&&!document.querySelector('#collide').disabled);
+  await page.waitForFunction(()=>document.querySelectorAll('.brief-card').length===3&&!document.querySelector('#collide').disabled,null,{timeout:150_000});
   await page.setViewportSize({width:1440,height:1050});
   const sizes=await page.locator('.candidate').evaluateAll(xs=>xs.slice(0,3).map(x=>Math.round(x.getBoundingClientRect().width)));
   assert.ok(Math.max(...sizes)-Math.min(...sizes)<=2,'Candidate cards must use equal column widths');

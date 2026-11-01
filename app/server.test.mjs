@@ -15,7 +15,8 @@ test('server requires confirmed distinct entities and preserves partial domain r
     }
     return {body,evidence:{path,params,parameterHash:'fixture-'+(params['filter.type']??'search')+'-'+(params['signal.interests.entities']??'')},cached:false};
   }};
-  const app=createApp({client,stateSecret:'test-secret'});
+  const synthesize=async brief=>({...brief,synthesis:{status:'unavailable'}});
+  const app=createApp({client,stateSecret:'test-secret',synthesize});
   await new Promise(r=>app.listen(0,'127.0.0.1',r)); t.after(()=>new Promise(r=>app.close(r)));
   const base=`http://127.0.0.1:${app.address().port}`;
   const post=async body=>fetch(base+'/api/collide',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -38,7 +39,7 @@ test('server requires confirmed distinct entities and preserves partial domain r
   const publicSearch=await new Promise((resolve,reject)=>http.get(base+'/api/search?q=Aphex',{headers:{Host:'dialectic.vercel.app',Origin:'https://dialectic.vercel.app','X-Forwarded-Proto':'https'}},res=>{let body='';res.on('data',x=>body+=x);res.on('end',()=>resolve({status:res.statusCode,body:JSON.parse(body)}));}).on('error',reject));
   assert.equal(publicSearch.status,200);
   const entities=publicSearch.body.entities;
-  const cold=createApp({client,stateSecret:'test-secret'});
+  const cold=createApp({client,stateSecret:'test-secret',synthesize});
   await new Promise(r=>cold.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>cold.close(r)));
   const coldBase=`http://127.0.0.1:${cold.address().port}`;
   const coldCollision=await fetch(coldBase+'/api/collide',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({a:ids[0],b:ids[1],selectionTokens:entities.map(x=>x.selectionToken)})});

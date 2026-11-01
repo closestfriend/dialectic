@@ -20,8 +20,8 @@ Use speculative proposal language. Output only the requested editorial fields, w
 export async function synthesizeBrief(brief,{generate=generateText,model=process.env.AI_GATEWAY_MODEL??'anthropic/claude-sonnet-5.5'}={}) {
   const unavailable=message=>({...brief,synthesis:{status:'unavailable',model,message}});
   if(!brief.directions?.length)return unavailable('No grounded directions to synthesize.');
-  if(generate===generateText&&!process.env.AI_GATEWAY_API_KEY&&!process.env.VERCEL_OIDC_TOKEN)
-    return unavailable('AI synthesis is unavailable. Showing editorial template starting points.');
+  // Let the SDK resolve authentication: deployed OIDC tokens can live in the
+  // request context rather than process.env and refresh between invocations.
   try {
     const context={seeds:brief.seeds,basis:brief.basis,directions:brief.directions.map(d=>({
       id:d.id,reference:d.anchor,observation:d.observation,independentCheck:d.check,
@@ -38,7 +38,8 @@ export async function synthesizeBrief(brief,{generate=generateText,model=process
       return {...d,proposal:{...d.proposal,...editorial,kind:'ai_proposal',
         boundary:'AI-generated creative interpretation. Qloo supports reference selection; it does not validate this concept, demand, participation or rights.'}};
     }),limits:(brief.limits??[]).map(x=>x.includes('editorial templates')?'Creative proposals are AI-generated interpretations, not Qloo findings or validated strategies.':x),synthesis:{status:'generated',model,message:'Creative proposals generated from the measured Qloo references. Human development and testing are required.'}};
-  }catch {
+  }catch(error) {
+    console.warn('AI synthesis failed',JSON.stringify({name:error.name,status:error.statusCode,cause:error.cause?.name,finishReason:error.finishReason}));
     return unavailable('AI synthesis could not complete. Showing editorial template starting points.');
   }
 }
